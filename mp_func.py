@@ -1,3 +1,6 @@
+import time
+import logging
+
 from mpmath import mp, eig, fsum, fabs, norm, qr, mnorm
 
 import eyring_rate_script as eyring_script
@@ -5,8 +8,13 @@ import eyring_rate_script as eyring_script
 
 __author__ = 'Kyle Vitautas Lopin'
 
+logger = logging.getLogger('timer')
+hdlr = logging.FileHandler('timing_logger_mp.txt')
+logger.addHandler(hdlr)
+logger.setLevel(logging.INFO)
 
 def solve_eyring_rate_model(voltage, transition_matrix):
+    len_matrix = len(transition_matrix)
     # get the largest and smallest elements from the matrix to characterize the difficulty of solving null
     # space of the matrix and save it to be retrieved later
     largest_matrix_element, smallest_matrix_element = smallest_largest_elements(transition_matrix)
@@ -15,29 +23,33 @@ def solve_eyring_rate_model(voltage, transition_matrix):
                                smallest_matrix_element,
                                condition_number)
 
-    # 2a eig: get the steady state (ss) solution by using the eigenvector of the lowest eigenvalue
+    # get the steady state (ss) solution by using the eigenvector of the lowest eigenvalue
+    start = time.time()
     ss_by_eig, test_eigs_by_eig = steady_state_eig(transition_matrix)
-
+    eig_time = time.time()-start
     # save all the results in a custom data class and return it
     results_eig = solve_eyring_rate_model_ss(voltage, ss_by_eig,
                                              transition_matrix, test_eigs_by_eig,
                                              matrix_specs)
-
+    # get the steady state (ss) solution by using the svd decomposition
+    start = time.time()
     ss_by_svd, test_eig_by_svd = svd_func(transition_matrix)
-
+    svd_time = time.time()-start
     if any(ss_by_svd):  # incase the svd fails because of singularity
         results_svd = solve_eyring_rate_model_ss(voltage, ss_by_svd,
                                                  transition_matrix, test_eig_by_svd,
                                                  matrix_specs)
     else:
         results_svd = results_eig  # hack to make the program work
-
+    # get the steady state (ss) solution by using qr factorization
+    start = time.time()
     ss_by_qr, test_eig_by_qr = qr_func(transition_matrix)
-
+    qr_time = time.time()-start
     results_qr = solve_eyring_rate_model_ss(voltage, ss_by_qr,
                                             transition_matrix, test_eig_by_qr,
                                             matrix_specs)
-
+    logger.info('numpy times eig; svd; qr for matrix size %d: %5.10f %5.10f %5.10f' %
+                (len_matrix, eig_time, svd_time, qr_time))
     return results_eig, results_svd, results_qr
 
 

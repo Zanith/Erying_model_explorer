@@ -7,11 +7,12 @@ import gui_parameter_frame as param_frame
 import gui_simulation_frame as sim_frame
 import template_maker as script_maker
 import eyring_rate_script
-import result_toplevel
+import result_disp
 
 
 max_charge = 5
 FILEOPTIONS = {'defaultextension': '*.ert_model'}
+testing = True
 
 
 class EyringGUI(tk.Tk):
@@ -167,11 +168,23 @@ class EyringGUI(tk.Tk):
         for solute in results_eig[0].ion_transport:
             solutes.append(solute)
 
-        result_toplevel.MultiPlotWindows(self, voltages, barriers, results_eig, solutes, conc_labels, "Eig results")
+        r1=result_disp.MultiPlotWindows(self, voltages, barriers, results_eig, solutes, conc_labels, "Eig results")
 
-        result_toplevel.MultiPlotWindows(self, voltages, barriers, results_svd, solutes, conc_labels, "SVD results")
+        r2=result_disp.MultiPlotWindows(self, voltages, barriers, results_svd, solutes, conc_labels, "SVD results")
 
-        result_toplevel.MultiPlotWindows(self, voltages, barriers, results_qr, solutes, conc_labels, "QR results")
+        r3=result_disp.MultiPlotWindows(self, voltages, barriers, results_qr, solutes, conc_labels, "QR results")
+
+        if testing:
+            filename='testing1.csv'
+            r1.save_data(filename)
+            r1.save_custom_data(filename)
+            r1.save_custom_data2(filename)
+            r2.save_data(filename)
+            r2.save_custom_data(filename)
+            r2.save_custom_data2(filename)
+            r3.save_data(filename)
+            r3.save_custom_data(filename)
+            r3.save_custom_data2(filename)
 
     def get_settings(self, initial_settings):
         if initial_settings.Q_value_used:

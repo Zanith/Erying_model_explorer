@@ -19,10 +19,10 @@ def make_template(_math_type, num_binding_sites, ions, charges, q_type):
         template = f.read()  # get the template of the file to make
     if _math_type == 'mpmath':
         _import_statement = "from mpmath import mp, exp, matrix, nstr, chop\n" \
-                            "import mpmath_helper_function as helper"
+                            "import mp_func as helper"
         _mp_dps_statement = "mp.dps = mp_dps"
     elif _math_type == 'numpy':
-        _import_statement = "import numpy_helper_function as helper\n" \
+        _import_statement = "import np_func as helper\n" \
                             "from numpy import exp, matrix, asscalar, any\n" \
                             "from numpy.linalg import cond"
         _mp_dps_statement = ""
